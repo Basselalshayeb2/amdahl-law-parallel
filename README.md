@@ -1,11 +1,11 @@
 # Matrix Computation with OpenMP
 
-### Student
-- Name: Bassel Alshayeb - Басель Альшаеб
+### Студент
+- Имя: Bassel Alshayeb - Басель Альшаеб
 - ST: st123219
 
 ### Task
-Solution for first practical task 
+
 d = <B4 x, y>/<x, y> - <B3 x, y>/<x, y>
 ```
 Задание A-07 (Басель Альшаеб)
@@ -23,21 +23,20 @@ d = <B4 x, y>/<x, y> - <B3 x, y>/<x, y>,
 Срок сдачи отчета 26.11.2024.
 
 ```
+#### Объяснение
 
+Для анализа:
+- B — квадратная матрица.
+- X и Y — векторы.
+- <.,.> 
+- Размер матрицы `1000` (для экстремального тестирования).
 
-For analyzing:
-- B is a square matrix.
-- X and Y are vectors.
-- <.,.> represents the scalar product
-- Matrix Size `1000` for extrem testing
-
-The program supports both sequential **Sequential** and **Parallel** execution using OpenMP.
-I added the ability to take data from a file to make a test and verify answers between the two solutins.
+Программа поддерживает как **последовательное** выполнение, так и **параллельное** с использованием OpenMP. Реализована возможность использования данных из файла для проверки и верификации результатов.
 
 ---
 
-### Отчет
-**1. Server speces**
+### Решение
+**1. Характеристики системы**
 
 ```
 Operating System: Ubuntu 22.04.4 LTS
@@ -49,23 +48,26 @@ Memory: 14 G
 Disk Space: 1.5 G
 ```
 
-**2. Measuring result**
+**2. Результаты измерений**
 
-- Size: 1000
-- Sequential Time: 36.409 Seconds
-- Paralel Time: 
+- Размер матрицы: 1000
+- Последовательное время выполнения: 42.3219 Seconds
+- Параллельное время выполнения: 
 
 | Threads | Execution Time | Speedup |
 | ------- | -------------- | ------- |
-| 2 | 17.1853 | 2.157902393324527 |
-| 4 | 8.3027 | 4.466522938321269 |
-| 8 | 4.83579 | 7.668695290738432 |
-| 16 | 4.16871 | 8.895845477377895 |
-| ------- | -------------- | ------- |
+| 1 | 42.3219 | 1.0 |
+| 2 | 21.1306 | 2.002872611284109 |
+| 4 | 10.5706 | 4.003736779369193 |
+| 8 | 7.03364 | 6.017069397921986 |
+| 16 | 4.51372 | 9.376279432485843 |
+| 32 | 4.09819 | 10.326973615181336 |
+---
+
 
 **3. Python Output**
 
-![python result](python_result.png)
+![python result](python_result1.png)
 
 **4. Speedup Diagram As Amdahl's Law**
 
@@ -77,37 +79,43 @@ Disk Space: 1.5 G
 ![Execution Time VS Threads](execution_time_vs_threads.png)
 
 
-### Features
-- Matrix and vector input can be read from files or generated randomly.
-- Parallelized computations for matrix multiplications and scalar products using OpenMP.
-- Validation against sequential execution for correctness.
+### Особенности
+- Поддержка ввода матрицы и векторов из файлов или генерация случайных данных.
+- Параллельные вычисления для умножения матриц и вычисления скалярных произведений с использованием OpenMP.
+- Верификация корректности параллельного выполнения через последовательное выполнение.
 
 ---
 
-### Requirements
+### Требования
 - **C++ Compiler with OpenMP Support** 
 - **Python 3.10**
 
 ---
 
-### Usage
+### Использование
+
 **1. Compilation** \
-Compiling the program main.cpp with OpenMP support:
+
+Компиляция программы с поддержкой OpenMP main.cpp:
+
 ```bash
 g++ -o main -fopenmp  main.cpp
 ```
+
 **2. Execution** \
-- For full testing I used Python with a couple of predefined threads counts
+
+- Для полного тестирования используется Python с предустановленными значениями количества потоков
+
 ```
-[1, 2, 4, 8, 16]
+[1, 2, 4, 8, 16, 32]
 ```
 
-- You run the python to see the full diagrams and full tests written there
+- Запустите Python-скрипт для получения диаграмм и результатов
 
 ```bash
 python3 analyzer.py
 ```
-- Or you can run it manually and specify the number of threads you want 
+- Либо запустите программу вручную, указав количество потоков
 
 ```bash
 export OMP_NUM_THREADS=X
@@ -115,20 +123,22 @@ export OMP_NUM_THREADS=X
 ```
 
 **3. Debugging** \
+
 To run sequentialy and check the speed for:
 ```bash
 export OMP_NUM_THREADS=1 
+./main
 ```
 
 ---
 
 
-### Output
-1. Using the C++ code the program prints:
-- The computed result of d
-- The time for calculation and debugging data
+### Вывод
+1. C++:
+- Печатает вычисленное значение 𝑑.
+- Показывает время выполнения и отладочные данные
 
-2. Using the python code
-- All results for each amount of threads
-- Diagram to show Speed Up X Threads relatio
+2. Python
+- Отображает результаты для каждого количества потоков.
+- Строит диаграммы зависимости ускорения от количества потоков.
 

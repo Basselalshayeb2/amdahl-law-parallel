@@ -5,7 +5,7 @@ import numpy as np
 import math
 
 matrix_size = 1000 
-thread_counts = [1, 2, 4, 8, 16]
+thread_counts = [1, 2, 4, 8, 16, 32]
 program = "./main"
 results = []
 tolerance = 1e-6   
