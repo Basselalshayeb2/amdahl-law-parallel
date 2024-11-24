@@ -40,23 +40,23 @@ d = <B4 x, y>/<x, y> - <B3 x, y>/<x, y>,
 
 ```
 Operating System: Ubuntu 22.04.4 LTS
-Kernel: 6.8.0-49-generic
-Processer: AMD Ryzen 7 5700G with Radeon Graphics 
-Cores: 16
+Kernel: 5.15.0-122-generic
+Processer: Intel(R) Xeon(R) E-2136 CPU @ 3.30GHz 
+Cores: 12
 Architecture: x86_64
-Memory: 14 G
-Disk Space: 1.5 G
+Memory: 62 G
+Disk Space: 6.3 G
 ```
 
 **2. Результаты измерений**
 
 - Размер матрицы: 1000
-- Последовательное время выполнения: 42.3219 Seconds
+- Последовательное время выполнения: 36.2499 Seconds
 - Параллельное время выполнения: 
 
 | Threads | Execution Time | Speedup |
 | ------- | -------------- | ------- |
-| 1 | 42.3219 | 1.0 |
+| 1 | 36.2499 | 1.0 |
 | 2 | 21.1306 | 2.002872611284109 |
 | 4 | 10.5706 | 4.003736779369193 |
 | 8 | 7.03364 | 6.017069397921986 |
@@ -67,7 +67,7 @@ Disk Space: 1.5 G
 
 **3. Python Output**
 
-![python result](python_result1.png)
+![python result](console_result_python.png)
 
 **4. Speedup Diagram As Amdahl's Law**
 
