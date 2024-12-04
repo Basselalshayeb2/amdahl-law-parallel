@@ -3,9 +3,11 @@ import os
 import subprocess
 import numpy as np
 import math
+from prettytable import PrettyTable
 
 matrix_size = 1000 
-thread_counts = [1, 2, 4, 8, 16, 32]
+thread_counts = [1, 2, 4, 8, 16, 32, 64]
+array_sizes = [200, 500, 1000]
 program = "./main"
 results = []
 tolerance = 1e-6   
@@ -22,9 +24,8 @@ def generate_and_save_data(size):
     np.savetxt("vector_y.txt", y, fmt="%.6f")
     print(f"Generated and saved data for matrix size {size}.")
 
-def run_program(threads, use_files=False):
-    os.environ["OMP_NUM_THREADS"] = str(threads)
-    command = [program]
+def run_program(threads, size, use_files=False):
+    command = [program, "--threads", str(threads), "--size", str(size)]
     if use_files:
         command.append("--use-files")
     result = subprocess.run(command, capture_output=True, text=True)
@@ -43,17 +44,17 @@ def run_program(threads, use_files=False):
 # 1- prepare verification step 
 generate_and_save_data(matrix_size)
 
-print("Running sequential version (1 thread, with files)...")
-seq_time, seq_result = run_program(1, use_files=True)
+print("Running sequential version for checking (1 thread, with array size of 1000, With using generated array data)...")
+seq_time, seq_result = run_program(1, use_files=True, size=1000)
 if seq_time is None or seq_result is None:
     print("Failed to retrieve results for the sequential run.")
     exit()
 
-print(f"Sequential Result (from files): {seq_result}")
-print(f"Sequential Execution Time (from files): {seq_time} seconds")
+print(f"Sequential Result: {seq_result}")
+print(f"Sequential Execution Time: {seq_time} seconds")
 
 print(f"Running with 8 threads to compare the results with the sequential")
-par_time, par_result = run_program(8, use_files=True)
+par_time, par_result = run_program(8, use_files=True, size=1000)
 if par_time is None or par_result is None:
     print(f"Failed to retrieve results for 8 threads.")
 elif math.isclose(seq_result, par_result, rel_tol=tolerance):
@@ -62,55 +63,50 @@ else:
     print(f"Validation failed for 8 threads! Sequential: {seq_result}, Parallel: {par_result}")
 
 
+execution_times = {size: {} for size in array_sizes}  # Store execution times by size and thread count
+
 # 2- running all threads
-for threads in thread_counts:
-    print(f"Running with {threads} threads...")
-    os.environ["OMP_NUM_THREADS"] = str(threads)
-    result = subprocess.run([program], capture_output=True, text=True)
+for size in array_sizes:
+    for threads in thread_counts:
+        print(f"Running with {size} size {threads} threads...")
+        execution_time, computed_result = run_program(threads, use_files=False, size=size)
 
-    # Extract execution time from the output
-    execution_time = None
-    for line in result.stdout.split("\n"):
-        if "Execution Time" in line:
-            execution_time = float(line.split(":")[1].strip())
-            break
+        print(execution_time)
+        if execution_time is not None:
+                execution_times[size][threads] = execution_time
+        else:
+            print(f"Failed to extract execution time for {threads} threads.")
 
-    if execution_time is not None:
-        results.append((threads, execution_time))
-    else:
-        print(f"Failed to extract execution time for {threads} threads.")
 
-if not results:
-    print("No results captured. Ensure the C++ program is working correctly.")
-    exit()
+# Calculate speedups
+speedups = {size: {} for size in array_sizes}
+for size in array_sizes:
+    sequential_time = execution_times[size][1]  # Time for 1 thread as the baseline
+    for threads in thread_counts:
+        speedups[size][threads] = sequential_time / execution_times[size][threads]
 
-threads, times = zip(*results)
-sequential_time = times[0]
-speedups = [sequential_time / time for time in times]
+# Print speedup tables to console
+for size in array_sizes:
+    table = PrettyTable()
+    table.field_names = ["Threads", "Speedup"]
+    for threads in thread_counts:
+        table.add_row([threads, round(speedups[size][threads], 2)])
+    print(f"\nSpeedup Table for Matrix Size {size}x{size}")
+    print(table)
 
-# Execution Time vs Threads
-plt.figure(figsize=(10, 5))
-plt.plot(threads, times, marker="o", label="Execution Time")
-plt.title("Execution Time vs Number of Threads")
+
+plt.figure(figsize=(10, 6))
+for size in array_sizes:
+    speedup_values = [speedups[size][threads] for threads in thread_counts]
+    plt.plot(thread_counts, speedup_values, marker="o", label=f"Size {size}x{size}")
+
+plt.title("Speedup vs Threads (Acceleration Analysis)")
 plt.xlabel("Number of Threads")
-plt.ylabel("Execution Time (seconds)")
-plt.grid(True)
+plt.ylabel("Speedup (Acceleration)")
+plt.xticks(thread_counts)
+plt.grid()
 plt.legend()
-plt.savefig("execution_time_vs_threads.png")
+plt.savefig("speedup_vs_threads_analysis.png")
 plt.show()
 
-# Speedup vs Threads
-plt.figure(figsize=(10, 5))
-plt.plot(threads, speedups, marker="o", label="Speedup")
-plt.title("Speedup vs Number of Threads (Amdahl's Law)")
-plt.xlabel("Number of Threads")
-plt.ylabel("Speedup")
-plt.grid(True)
-plt.legend()
-plt.savefig("speedup_vs_threads.png")
-plt.show()
 
-print("\nResults:")
-print(f"{'Threads':<10}{'Execution Time':<20}{'Speedup':<10}")
-for t, time, speedup in zip(threads, times, speedups):
-    print(f"{t:<10}{time:<20}{speedup:<10}")
