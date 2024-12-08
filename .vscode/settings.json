@@ -4,6 +4,9 @@
         "*.layout-template": "vue",
         "*.vue": "vue",
         "iostream": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "iomanip": "cpp",
+        "chrono": "cpp",
+        "cstring": "cpp"
     }
 }

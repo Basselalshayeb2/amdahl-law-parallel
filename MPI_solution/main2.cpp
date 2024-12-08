@@ -3,6 +3,8 @@
 #include <vector>
 #include <cstdlib>
 #include <iomanip>
+#include <chrono>
+#include <cstring>
 
 using namespace std;
 
@@ -19,9 +21,27 @@ int main(int argc, char *argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    int n = 10;
+    
+    int n = 1000;
+    int seed = 42;
     if (argc > 1)
         n = atoi(argv[1]);
+
+    // Parse command-line arguments
+    for (int i = 1; i < argc; ++i)
+    {
+        if (strcmp(argv[i], "--size") == 0 && i + 1 < argc)
+        {
+            n = atoi(argv[++i]);
+        }
+        else if (strcmp(argv[i], "--seed") == 0 && i + 1 < argc)
+        {
+            seed = atoi(argv[++i]);
+        }
+    }
+
+    // init seed
+    srand(seed);
 
     vector<vector<double>> B, B2, B3, B4;
     vector<double> x(n), y(n);
@@ -31,6 +51,7 @@ int main(int argc, char *argv[])
     B3.resize(n, vector<double>(n, 0.0));
     B4.resize(n, vector<double>(n, 0.0));
 
+    // init of matrix and vector
     if (rank == 0)
     {
         generate_matrix(B, n);
@@ -45,14 +66,18 @@ int main(int argc, char *argv[])
         }
     }
 
+
     MPI_Bcast(x.data(), n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Bcast(y.data(), n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
 
     for (int i = 0; i < n; i++)
     {
         MPI_Bcast(B3[i].data(), n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         MPI_Bcast(B4[i].data(), n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     }
+
+    double comp_start = MPI_Wtime();
 
     int rows_per_proc = n / size;
     int extra_rows = n % size;
@@ -75,8 +100,14 @@ int main(int argc, char *argv[])
     if (rank == 0) {
         double global_scalar_xy = scalar_product_v2(x, y, 0, n);
         double d = (global_scalar_B4xy / global_scalar_xy) - (global_scalar_B3xy / global_scalar_xy);
+
+        double comp_end = MPI_Wtime();
+
+        double total_time = (comp_end - comp_start) * 1000; // Convert to milliseconds
+
         cout << fixed << setprecision(2);
-        cout << "Final Result (d): " << d << endl;
+        cout << "Result (d): " << d << endl;
+        cout << "Execution Time: " << total_time << endl;
         cout << "Global scalar <B3x, y>: " << global_scalar_B3xy << endl;
         cout << "Global scalar <B4x, y>: " << global_scalar_B4xy << endl;
         cout << "Global scalar <x, y>: " << global_scalar_xy << endl;
