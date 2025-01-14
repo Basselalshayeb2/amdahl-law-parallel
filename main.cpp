@@ -62,10 +62,19 @@ int main(int argc, char *argv[])
     double start_time = omp_get_wtime();
 
     vector<vector<double>> B2(n, vector<double>(n));
+    #pragma omp parallel 
+    {
+    #pragma omp single
+    {
+    #pragma omp task
     matrix_multiply(B, B, B2, n);
+    #pragma omp task
     matrix_multiply(B, B2, B3, n);
+    #pragma omp task
     matrix_multiply(B2, B2, B4, n);
-
+    }
+    }
+    
     double scalar_xy, scalar_B4xy, scalar_B3xy;
 
     scalar_xy = scalar_product(x, y, n);
